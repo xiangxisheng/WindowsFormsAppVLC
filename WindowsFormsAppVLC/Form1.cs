@@ -13,8 +13,11 @@ namespace WindowsFormsAppVLC
 
         private void button1_Click(object sender, EventArgs e)
         {
+            button1.Enabled = false;
             Form2 form2 = new Form2();
+            form2.Text = "频道001-016";
             form2.Show();
+            button1.Enabled = true;
         }
     }
 }

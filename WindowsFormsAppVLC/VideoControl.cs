@@ -10,12 +10,12 @@ namespace WindowsFormsAppVLC
 {
     public partial class VideoControl : UserControl
     {
-        int aaa = 0;
         int volume_value = 0;
         private Queue<ushort> curVols = new Queue<ushort>();
         private readonly MediaPlayer _mp;
-        public VideoControl(LibVLC _libVLC, string sUri)
+        public VideoControl(LibVLC _libVLC, string sUri, string title)
         {
+
             WaveOutEvent waveOut = new WaveOutEvent();
             BufferedWaveProvider waveProvider = new BufferedWaveProvider(new WaveFormat(44100, 16, 2));
 
@@ -28,9 +28,9 @@ namespace WindowsFormsAppVLC
             // 开始播放
             waveOut.Play();
 
-
-            aaa = 1;
             InitializeComponent();
+            labelTitle.Text = title;
+
             Dock = DockStyle.Fill;
             _mp = new MediaPlayer(_libVLC);
             //_mp.SetAudioOutput("directsound");
@@ -128,7 +128,6 @@ namespace WindowsFormsAppVLC
 
         public void Stop()
         {
-            aaa = 0;
             _mp.Stop();
             _mp.Dispose();
         }
