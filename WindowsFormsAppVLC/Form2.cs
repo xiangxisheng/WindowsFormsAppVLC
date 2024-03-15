@@ -1,0 +1,50 @@
+﻿using LibVLCSharp.Shared;
+using System;
+using System.Collections.Generic;
+using System.Windows.Forms;
+
+namespace WindowsFormsAppVLC
+{
+    public partial class Form2 : Form
+    {
+        public List<VideoControl> videoControls = new List<VideoControl>();
+        public readonly LibVLC _libVLC;
+        public Form2()
+        {
+            InitializeComponent();
+            //_libVLC = new LibVLC(enableDebugLogs: true);
+            _libVLC = new LibVLC();
+            Load += Form1_Load;
+            FormClosed += Form1_FormClosed;
+            FormClosing += Form2_FormClosing;
+            videoControls.Add(new VideoControl(_libVLC, "http://5.28.32.50:10122/TV0001"));
+            videoControls.Add(new VideoControl(_libVLC, "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"));
+        }
+
+        private void Form2_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            foreach (VideoControl videoControl in videoControls)
+            {
+                videoControl.Stop();
+            }
+            foreach (VideoControl videoControl in videoControls)
+            {
+                videoControl.Dispose();
+            }
+            _libVLC.Dispose();
+        }
+
+        private void Form1_FormClosed(object sender, FormClosedEventArgs e)
+        {
+
+        }
+
+        private void Form1_Load(object sender, EventArgs e)
+        {
+            foreach (VideoControl videoControl in videoControls)
+            {
+                tableLayoutPanel1.Controls.Add(videoControl);
+            }
+        }
+    }
+}
