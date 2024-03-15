@@ -63,7 +63,33 @@ namespace WindowsFormsAppVLC
         {
             foreach (VideoControl videoControl in videoControls)
             {
+                videoControl.MouseDoubleClick += VideoControl_MouseDoubleClick;
                 tableLayoutPanel1.Controls.Add(videoControl);
+            }
+        }
+
+        private void VideoControl_MouseDoubleClick(object sender, MouseEventArgs e)
+        {
+            VideoControl sender1 = (VideoControl)sender;
+            if (e.Button == MouseButtons.Right)
+            {
+                return;
+            }
+            tableLayoutPanel1.Visible = !tableLayoutPanel1.Visible;
+            Controls.Clear();
+            if (tableLayoutPanel1.Visible)
+            {
+                Controls.Add(tableLayoutPanel1);
+                tableLayoutPanel1.Controls.Clear();
+                foreach (VideoControl videoControl in videoControls)
+                {
+                    tableLayoutPanel1.Controls.Add(videoControl);
+                }
+            }
+            else
+            {
+                // 全屏化
+                Controls.Add(sender1);
             }
         }
     }

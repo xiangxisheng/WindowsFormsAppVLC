@@ -1,13 +1,14 @@
 ﻿using LibVLCSharp.Shared;
 using NAudio.Wave;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
 namespace WindowsFormsAppVLC
 {
+
+
     public partial class VideoControl : UserControl
     {
         int volume_value = 0;
@@ -30,9 +31,21 @@ namespace WindowsFormsAppVLC
 
             InitializeComponent();
             labelTitle.Text = title;
+            labelTitle.MouseDoubleClick += delegate (object sender, MouseEventArgs e)
+            {
+                MessageBox.Show(string.Format("{0}", labelTitle.Text));
+            };
 
             Dock = DockStyle.Fill;
             _mp = new MediaPlayer(_libVLC);
+
+            _mp.EnableMouseInput = false;
+            _mp.EnableKeyInput = false;
+            panel1.MouseDoubleClick += delegate (object sender, MouseEventArgs e)
+            {
+                OnMouseDoubleClick(e);
+            };
+
             //_mp.SetAudioOutput("directsound");
 
             //using var outputDevice = new WaveOutEvent();
