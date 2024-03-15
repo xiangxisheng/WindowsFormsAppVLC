@@ -17,6 +17,17 @@ namespace WindowsFormsAppVLC
                 verticalProgressBar.Value = value;
             }
         }
+        public double ValueD
+        {
+            get
+            {
+                return (double)verticalProgressBar.Value / verticalProgressBar.Maximum;
+            }
+            set
+            {
+                verticalProgressBar.Value = (int)(value * verticalProgressBar.Maximum);
+            }
+        }
         public VolumeControl()
         {
             InitializeComponent();
@@ -25,7 +36,7 @@ namespace WindowsFormsAppVLC
             verticalProgressBar.Dock = DockStyle.Fill;
             Controls.Add(verticalProgressBar);
             verticalProgressBar.Minimum = 0;
-            verticalProgressBar.Maximum = 255;
+            verticalProgressBar.Maximum = 1000 * 1000 * 1000;
             //verticalProgressBar.Value = 0;
         }
 

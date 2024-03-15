@@ -2,6 +2,7 @@
 using NAudio.Wave;
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
@@ -11,6 +12,7 @@ namespace WindowsFormsAppVLC
     {
         int aaa = 0;
         int volume_value = 0;
+        private Queue<ushort> curVols = new Queue<ushort>();
         private readonly MediaPlayer _mp;
         public VideoControl(LibVLC _libVLC, string sUri)
         {
@@ -40,7 +42,7 @@ namespace WindowsFormsAppVLC
             //outputDevice.Init(waveProvider);
             //_mp.audio
 
-            byte[] processAudio(byte[]byteArray)
+            byte[] processAudio(byte[] byteArray)
             {
                 short[] shortArray = new short[byteArray.Length / 2];
                 Buffer.BlockCopy(byteArray, 0, shortArray, 0, byteArray.Length);
@@ -81,53 +83,14 @@ namespace WindowsFormsAppVLC
                 int count = (int)cc * 4;
                 byte[] audioData1 = new byte[count];
                 Marshal.Copy(samples, audioData1, 0, count);
-                double vol = getVol(audioData1);
-                Invoke(new Action(() =>
-                {
-                    volumeControl1.Value = (int)(vol / 65535 * 255);
-                }));
+                //curVol = (double)getVol(audioData1) / 65536;
+                curVols.Enqueue(getVol(audioData1));
                 //Console.WriteLine(vol);
                 byte[] audioData2 = processAudio(audioData1);
                 // 将音频数据添加到BufferedWaveProvider中
                 waveProvider.AddSamples(audioData2, 0, audioData2.Length);
-                return;
-                if (aaa==0)
-                {
-                    return;
-                }
-                // 在这里添加处理音频数据的逻辑
-                //Console.WriteLine($"Received audio data: count={count}, pts={pts}");
-
-
-                int bytes = (int)count * 2; // (16 bit, 1 channel)
-                var buffer = new byte[bytes];
-                Marshal.Copy(samples, buffer, 0, bytes);
-
-                //waveProvider.AddSamples(buffer, 0, bytes);
-                //writer.Write(buffer, 0, bytes);
-
-                // 将 IntPtr 转换为 byte 数组
-                byte[] audioData = new byte[count];
-                System.Runtime.InteropServices.Marshal.Copy(samples, audioData, 0, (int)count);
-                //Console.Write(audioData);
-                if (aaa == 0)
-                {
-                    return;
-                }
-                if (!IsDisposed)
-                {
-                    Invoke(new Action(() =>
-                    {
-                        if (aaa == 0)
-                        {
-                            return;
-                        }
-                        volumeControl1.Value = audioData[0];
-                    }));
-                }
-                // 在这里添加显示电平信号的逻辑
             }
-            
+
             _mp.SetAudioCallbacks(HandleAudioData, null, null, null, null);
             /*
             Disposed += delegate (object sender, EventArgs e)
@@ -170,5 +133,50 @@ namespace WindowsFormsAppVLC
             _mp.Dispose();
         }
 
+        static double VolumeToDB(double volumeRatio)
+        {
+            // 计算dB值（假设最大音量对应0 dB）
+            return 20 * Math.Log10(volumeRatio);
+        }
+        static double VolumeToDBRatio(double db1, double minDB = -60)
+        {
+            // 输入输出都是0至1范围的值，区别是以DB计算的值
+            double db2 = VolumeToDB(db1);
+            double db3 = db2 < minDB ? minDB : db2;
+            return (db3 - minDB) / -minDB;
+        }
+
+        double bufsize = 10;
+        private ushort GetCurVol()
+        {
+            int min = 1, max = 100;
+            if (curVols.Count == 0)
+            {
+                //Console.WriteLine("curVols.Count={0},bufsize={1}", curVols.Count, bufsize);
+                return 0;
+            }
+            if (curVols.Count <= 2)
+            {
+                //Console.WriteLine("curVols.Count={0},bufsize={1}", curVols.Count, bufsize);
+                bufsize++;
+            }
+            if (curVols.Count < bufsize)
+            {
+                // 太快了，要减速
+                timer1.Interval = timer1.Interval >= max ? max : (int)Math.Ceiling((double)timer1.Interval * 1.1);
+            }
+            else
+            {
+                // 慢了要加速
+                bufsize *= 0.999;
+                timer1.Interval = timer1.Interval <= min ? min : (int)((double)timer1.Interval * 0.95);
+            }
+            return curVols.Dequeue();
+        }
+
+        private void timer1_Tick(object sender, EventArgs e)
+        {
+            volumeControl1.ValueD = VolumeToDBRatio((double)GetCurVol() / 65536);
+        }
     }
 }

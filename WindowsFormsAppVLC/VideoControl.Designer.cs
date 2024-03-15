@@ -28,11 +28,13 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
             this.tableLayoutPanel2 = new System.Windows.Forms.TableLayoutPanel();
+            this.panel1 = new System.Windows.Forms.Panel();
             this.trackBar1 = new System.Windows.Forms.TrackBar();
             this.labelTitle = new System.Windows.Forms.Label();
-            this.panel1 = new System.Windows.Forms.Panel();
+            this.timer1 = new System.Windows.Forms.Timer(this.components);
             this.volumeControl1 = new WindowsFormsAppVLC.VolumeControl();
             this.tableLayoutPanel1.SuspendLayout();
             this.tableLayoutPanel2.SuspendLayout();
@@ -73,10 +75,19 @@
             this.tableLayoutPanel2.Size = new System.Drawing.Size(198, 103);
             this.tableLayoutPanel2.TabIndex = 0;
             // 
+            // panel1
+            // 
+            this.panel1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.panel1.Location = new System.Drawing.Point(20, 0);
+            this.panel1.Margin = new System.Windows.Forms.Padding(0);
+            this.panel1.Name = "panel1";
+            this.panel1.Size = new System.Drawing.Size(158, 103);
+            this.panel1.TabIndex = 1;
+            // 
             // trackBar1
             // 
             this.trackBar1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.trackBar1.Location = new System.Drawing.Point(0, 0);
+            this.trackBar1.Location = new System.Drawing.Point(178, 0);
             this.trackBar1.Margin = new System.Windows.Forms.Padding(0);
             this.trackBar1.Maximum = 100;
             this.trackBar1.Name = "trackBar1";
@@ -96,22 +107,21 @@
             this.labelTitle.Text = "labelTitle";
             this.labelTitle.TextAlign = System.Drawing.ContentAlignment.MiddleCenter;
             // 
-            // panel1
+            // timer1
             // 
-            this.panel1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.panel1.Location = new System.Drawing.Point(20, 0);
-            this.panel1.Margin = new System.Windows.Forms.Padding(0);
-            this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(158, 103);
-            this.panel1.TabIndex = 1;
+            this.timer1.Enabled = true;
+            this.timer1.Tick += new System.EventHandler(this.timer1_Tick);
             // 
             // volumeControl1
             // 
             this.volumeControl1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.volumeControl1.Location = new System.Drawing.Point(181, 3);
+            this.volumeControl1.Location = new System.Drawing.Point(0, 0);
+            this.volumeControl1.Margin = new System.Windows.Forms.Padding(0);
             this.volumeControl1.Name = "volumeControl1";
-            this.volumeControl1.Size = new System.Drawing.Size(14, 97);
+            this.volumeControl1.Size = new System.Drawing.Size(20, 103);
             this.volumeControl1.TabIndex = 2;
+            this.volumeControl1.Value = 0;
+            this.volumeControl1.ValueD = 0D;
             // 
             // VideoControl
             // 
@@ -138,5 +148,6 @@
         private System.Windows.Forms.Label labelTitle;
         private System.Windows.Forms.Panel panel1;
         private VolumeControl volumeControl1;
+        private System.Windows.Forms.Timer timer1;
     }
 }
