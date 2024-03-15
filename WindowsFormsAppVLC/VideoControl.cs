@@ -54,6 +54,26 @@ namespace WindowsFormsAppVLC
                 return byteArray2;
             }
 
+            ushort getVol(byte[] byteArray)
+            {
+                short[] shortArray = new short[byteArray.Length / 2];
+                Buffer.BlockCopy(byteArray, 0, shortArray, 0, byteArray.Length);
+                short min = 0, max = 0;
+                for (short i = 0; i < shortArray.Length; i++)
+                {
+                    short v = shortArray[i];
+                    if (v < min)
+                    {
+                        min = v;
+                    }
+                    if (v > max)
+                    {
+                        max = v;
+                    }
+                }
+                return (ushort)(max - min);
+            }
+
             // 音频回调函数，用于处理音频数据
             void HandleAudioData(IntPtr data, IntPtr samples, uint cc, long pts)
             {
@@ -61,6 +81,12 @@ namespace WindowsFormsAppVLC
                 int count = (int)cc * 4;
                 byte[] audioData1 = new byte[count];
                 Marshal.Copy(samples, audioData1, 0, count);
+                double vol = getVol(audioData1);
+                Invoke(new Action(() =>
+                {
+                    volumeControl1.Value = (int)(vol / 65535 * 255);
+                }));
+                //Console.WriteLine(vol);
                 byte[] audioData2 = processAudio(audioData1);
                 // 将音频数据添加到BufferedWaveProvider中
                 waveProvider.AddSamples(audioData2, 0, audioData2.Length);
