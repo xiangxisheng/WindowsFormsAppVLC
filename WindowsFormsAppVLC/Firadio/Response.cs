@@ -38,6 +38,7 @@ namespace Firadio
 
             [DataMember(Name = "end")]
             public int End { get; internal set; }
+
         }
 
         [DataContract]
