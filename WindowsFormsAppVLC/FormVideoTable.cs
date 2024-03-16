@@ -44,6 +44,7 @@ namespace WindowsFormsAppVLC
         public FormVideoTable()
         {
             InitializeComponent();
+            SetFormText();
             new Thread(new ThreadStart(InitLibVLC)).Start();
             FormClosing += delegate (object _sender, FormClosingEventArgs _e)
             {
@@ -214,7 +215,7 @@ namespace WindowsFormsAppVLC
                 MessageBox.Show("配置文件JSON解析失败: " + ex.ToString());
                 return;
             }
-            SetFormText("");
+            SetFormText();
             if (JsonConfig.Menus == null)
             {
                 return;
@@ -233,17 +234,17 @@ namespace WindowsFormsAppVLC
             labelMsgText = "请在菜单栏选择要查看的视频";
         }
 
-        private void SetFormText(string menuItemTitle)
+        private void SetFormText(string menuItemTitle = "")
         {
             string version = Assembly.GetEntryAssembly().GetName().Version.ToString();
-            string formTitle = string.IsNullOrWhiteSpace(JsonConfig.Title) ? "IPTV视频监控" : JsonConfig.Title;
+            string formTitle = JsonConfig == null || string.IsNullOrWhiteSpace(JsonConfig.Title) ? Text : JsonConfig.Title;
             if (menuItemTitle == "")
             {
-                Text = string.Format("{0} ({1})", formTitle, version);
+                Text = string.Format("{0} (v{1})", formTitle, version);
             }
             else
             {
-                Text = string.Format("{0} - {1} ({2})", menuItemTitle, JsonConfig.Title, version);
+                Text = string.Format("{0} - {1} (v{2})", menuItemTitle, JsonConfig.Title, version);
             }
         }
 
