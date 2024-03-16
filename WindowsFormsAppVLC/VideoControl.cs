@@ -14,11 +14,11 @@ namespace WindowsFormsAppVLC
         int volume_value = 0;
         private Queue<ushort> curVols = new Queue<ushort>();
         private readonly MediaPlayer _mp;
+        readonly WaveOutEvent waveOut = new WaveOutEvent();
+        readonly BufferedWaveProvider waveProvider = new BufferedWaveProvider(new WaveFormat(44100, 16, 2));
         public VideoControl(LibVLC _libVLC, string sUri, string title)
         {
 
-            WaveOutEvent waveOut = new WaveOutEvent();
-            BufferedWaveProvider waveProvider = new BufferedWaveProvider(new WaveFormat(44100, 16, 2));
 
             // 设置音频回调
             //HandleAudioPlay(IntPtr.Zero, IntPtr.Zero, 0, 0);
@@ -143,6 +143,9 @@ namespace WindowsFormsAppVLC
         {
             _mp.Stop();
             _mp.Dispose();
+            waveProvider.ClearBuffer();
+            waveOut.Stop();
+            waveOut.Dispose();
         }
 
         static double VolumeToDB(double volumeRatio)

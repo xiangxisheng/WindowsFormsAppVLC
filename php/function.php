@@ -47,23 +47,32 @@ function buildUrl($parts)
 	return $url;
 }
 
+function padzero($str)
+{
+	return str_pad($str, 3, '0', STR_PAD_LEFT);
+}
+
 function getChannels()
 {
 	$dsn = 'mysql:dbname=sdb30;host:127.0.0.1';
 	$db = new PDO($dsn, 'root', '');
 	$db->beginTransaction();
 	$sql = 'SELECT t1.channelid,t1.channelnumber,t1.name title_cn,t2.name title_en,t1.liveurl,t1.isvisible FROM channel t1 LEFT JOIN channellangmap t2 ON t1.channelid=t2.channelid WHERE t1.isvisible=1';
+	$sql = 'SELECT t1.channelnumber,t1.name,t1.liveurl FROM channel t1 WHERE t1.isvisible=1';
 	$stmt = $db->prepare($sql);
 	$param = [];
 	$stmt->execute($param);
 	$db->rollBack();
 	$rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
 	foreach ($rows as &$row) {
-		if ($row['liveurl']) {
+		if (isset($row['liveurl'])) {
 			$url = parse_url($row['liveurl']);
 			$url['host'] = parse_url($_SERVER['HTTP_HOST'])['host'];
 			$row['liveurl'] = buildUrl($url);
 		}
+		$row['title'] = '[' . padzero($row['channelnumber']) . ']' . $row['name'];
+		unset($row['channelnumber']);
+		unset($row['name']);
 	}
 	return $rows;
 }

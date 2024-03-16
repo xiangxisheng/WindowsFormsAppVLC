@@ -62,6 +62,12 @@
     <Compile Include="Firadio\HttpUtils.cs" />
     <Compile Include="Firadio\Response.cs" />
     <Compile Include="Firadio\WebUtils.cs" />
+    <Compile Include="FormDownload.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="FormDownload.Designer.cs">
+      <DependentUpon>FormDownload.cs</DependentUpon>
+    </Compile>
     <Compile Include="FormVideoTable.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -82,8 +88,12 @@
     <Compile Include="VolumeControl.Designer.cs">
       <DependentUpon>VolumeControl.cs</DependentUpon>
     </Compile>
+    <EmbeddedResource Include="FormDownload.resx">
+      <DependentUpon>FormDownload.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="FormVideoTable.resx">
       <DependentUpon>FormVideoTable.cs</DependentUpon>
+      <SubType>Designer</SubType>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>

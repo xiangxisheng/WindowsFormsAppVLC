@@ -39,10 +39,10 @@ namespace Firadio
                 classWebUtils.ServerUrl = ServerURL + path;
             }
             string sJson = await classWebUtils.PostForm(postData);
-            Firadio.Response response;
+            Response response;
             try
             {
-                response = HttpUtils.JSON.Parse<Firadio.Response>(sJson);
+                response = JSON.Parse<Response>(sJson);
             }
             catch (Exception ex)
             {

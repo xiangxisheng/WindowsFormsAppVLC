@@ -2,8 +2,8 @@
 using System;
 using System.Collections.Generic;
 using System.Drawing;
+using System.IO;
 using System.Threading;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace WindowsFormsAppVLC
@@ -12,6 +12,7 @@ namespace WindowsFormsAppVLC
     {
         private readonly List<VideoControl> videoControls = new List<VideoControl>();
         private LibVLC _libVLC;
+        private string labelMsgText;
         private readonly Label labelMessage = new Label
         {
             TextAlign = ContentAlignment.MiddleCenter,
@@ -22,39 +23,29 @@ namespace WindowsFormsAppVLC
 
         private void InitLibVLC()
         {
+            labelMsgText = "正在初始化视频控件...";
             if (_libVLC == null)
             {
                 //_libVLC = new LibVLC(enableDebugLogs: true);
                 _libVLC = new LibVLC();
             }
-            Invoke(new Action(() =>
-            {
-                ShowMessageLabel("请在菜单栏选择要查看的视频");
-            }));
+            //Invoke(new Action(() =>
+            //{
+            //    ShowMessageLabel("请在菜单栏选择要查看的视频");
+            //}));
+            labelMsgText = "请在菜单栏选择要查看的视频";
         }
 
         public FormVideoTable()
         {
             InitializeComponent();
-            ShowMessageLabel("正在初始化视频控件...");
             new Thread(new ThreadStart(InitLibVLC)).Start();
-
+            FormClosing += delegate (object _sender, FormClosingEventArgs _e)
+            {
+                ClearVideoControl();
+                _libVLC.Dispose();
+            };
             加载配置文件();
-
-            int cols = 4;
-            int rows = 4;
-            tableLayoutPanel1.ColumnCount = cols;
-            tableLayoutPanel1.ColumnStyles.Clear();
-            for (int i = 1; i <= cols; i++)
-            {
-                tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
-            }
-            tableLayoutPanel1.RowCount = rows;
-            tableLayoutPanel1.RowStyles.Clear();
-            for (int i = 1; i <= rows; i++)
-            {
-                tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
-            }
         }
 
         private void VideoControl_MouseDoubleClick(object sender, MouseEventArgs e)
@@ -83,93 +74,138 @@ namespace WindowsFormsAppVLC
             }
         }
 
+
+        private void ClearVideoControl()
+        {
+            foreach (VideoControl videoControl in videoControls)
+            {
+                videoControl.Stop();
+            }
+            foreach (VideoControl videoControl in videoControls)
+            {
+                videoControl.Dispose();
+            }
+            videoControls.Clear();
+        }
+
         private void ToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            EndMessageLabel();
-            if (_libVLC == null)
+            ToolStripMenuItem toolStripMenuItem = (ToolStripMenuItem)sender;
+            Firadio.Response.MenuItem menuItem = (Firadio.Response.MenuItem)toolStripMenuItem.Tag;
+            if (menuItem.Name == "下载配置文件")
             {
-                //_libVLC = new LibVLC(enableDebugLogs: true);
-                _libVLC = new LibVLC();
+                new FormDownload().ShowDialog();
+                加载配置文件();
+                return;
             }
-            FormClosing += delegate (object _sender, FormClosingEventArgs _e)
+            labelMsgText = "";
+
+            int cols = menuItem.Cols;
+            int rows = menuItem.Rows;
+            tableLayoutPanel1.ColumnCount = cols;
+            tableLayoutPanel1.ColumnStyles.Clear();
+            for (int i = 1; i <= cols; i++)
             {
-                foreach (VideoControl videoControl in videoControls)
-                {
-                    videoControl.Stop();
-                }
-                foreach (VideoControl videoControl in videoControls)
-                {
-                    videoControl.Dispose();
-                }
-                _libVLC.Dispose();
-            };
-            videoControls.Add(new VideoControl(_libVLC, "http://5.28.32.50:10122/TV0001", "test1"));
-            videoControls.Add(new VideoControl(_libVLC, "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4", "test2"));
-            videoControls.Add(new VideoControl(_libVLC, "http://5.28.32.50:10122/TV0001", "test3"));
-            videoControls.Add(new VideoControl(_libVLC, "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4", "test4"));
-            videoControls.Add(new VideoControl(_libVLC, "http://5.28.32.50:10122/TV0001", "test5"));
-            videoControls.Add(new VideoControl(_libVLC, "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4", "test6"));
+                tableLayoutPanel1.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            }
+            tableLayoutPanel1.RowCount = rows;
+            tableLayoutPanel1.RowStyles.Clear();
+            for (int i = 1; i <= rows; i++)
+            {
+                tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
+            }
+
+
+            ClearVideoControl();
+            for (int i = menuItem.Start; i <= menuItem.End; i++)
+            {
+                videoControls.Add(new VideoControl(_libVLC, JsonConfig.Channels[i].Liveurl, JsonConfig.Channels[i].Title));
+            }
+            //videoControls.Add(new VideoControl(_libVLC, "http://5.28.32.50:10122/TV0001", "test5"));
+            //videoControls.Add(new VideoControl(_libVLC, "http://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4", "test6"));
+            tableLayoutPanel1.Controls.Clear();
             foreach (VideoControl videoControl in videoControls)
             {
                 videoControl.MouseDoubleClick += VideoControl_MouseDoubleClick;
                 tableLayoutPanel1.Controls.Add(videoControl);
             }
         }
-        private void ShowMessageLabel(string LabelText)
-        {
-            ControlsInit(labelMessage);
-            labelMessage.Text = LabelText;
-        }
-
-        private void EndMessageLabel()
-        {
-            ControlsInit(tableLayoutPanel1);
-        }
-
-        private async Task 获取分屏列表()
-        {
-            ShowMessageLabel("正在加载频道列表...");
-
-            await Task.Delay(5000);
-            string urlPre_api = @"http://5.28.32.50:10128/xixi";
-            Dictionary<string, string> postData = new Dictionary<string, string>();
-            Firadio.HttpUtils httpUtils = new Firadio.HttpUtils(urlPre_api);
-            try
-            {
-                Firadio.Response response = await httpUtils.POST数据(@"/iptv.php", postData);
-                Console.WriteLine(response.Table.Rows);
-                //iptv_channels = response.Table.Rows;
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.Message + "\r\n" + httpUtils.MessageShow.Text, httpUtils.MessageShow.Caption);
-            }
-            EndMessageLabel();
-        }
 
         private void ControlsInit(Control control)
         {
             Controls.Clear();
-            Controls.Add(menuStrip1);
             Controls.Add(control);
+            Controls.Add(menuStrip1);
         }
+
+        private void timer1_Tick(object sender, EventArgs e)
+        {
+            if (labelMsgText != labelMessage.Text)
+            {
+                labelMessage.Text = labelMsgText;
+                if (labelMsgText == "")
+                {
+                    ControlsInit(tableLayoutPanel1);
+                }
+                else
+                {
+                    ControlsInit(labelMessage);
+                }
+            }
+        }
+
+
+        private ToolStripMenuItem ToToolStripMenuItem(Firadio.Response.MenuItem menuItem)
+        {
+            ToolStripMenuItem toolStripMenuItem = new ToolStripMenuItem();
+            toolStripMenuItem.Tag = menuItem;
+            toolStripMenuItem.Text = menuItem.Name;
+            toolStripMenuItem.Click += ToolStripMenuItem_Click;
+            return toolStripMenuItem;
+        }
+
+        Firadio.Response JsonConfig;
 
         private void 加载配置文件()
         {
-            ToolStripMenuItem toolStripMenuItem = new ToolStripMenuItem();
-            toolStripMenuItem.Text = "下载配置";
-            toolStripMenuItem.Click += ToolStripMenuItem_Click;
-            menuStrip1.Items.Add(toolStripMenuItem);
+            menuStrip1.Items.Clear();
+            // 首先添加一个下载配置文件的按钮，方便随时点击下载
+            menuStrip1.Items.Add(ToToolStripMenuItem(new Firadio.Response.MenuItem
+            {
+                Name = "下载配置文件"
+            }));
 
-            ToolStripMenuItem toolStripMenuItem2 = new ToolStripMenuItem();
-            toolStripMenuItem2.Text = "4分屏";
-            toolStripMenuItem2.Checked = true;
+            string jsonPath = Application.ExecutablePath + ".json";
+            if (!File.Exists(jsonPath))
+            {
+                // 如果配置文件不存在，自动打开下载框
+                new FormDownload().ShowDialog();
+                return;
+            }
+            try
+            {
+                string sJson = File.ReadAllText(jsonPath);
+                JsonConfig = Firadio.HttpUtils.JSON.Parse<Firadio.Response>(sJson);
+                Console.WriteLine(JsonConfig);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("配置文件JSON解析失败: " + ex.ToString());
+                return;
+            }
 
-            ToolStripMenuItem toolStripMenuItem3 = new ToolStripMenuItem();
-            toolStripMenuItem3.Text = "444分屏";
-            toolStripMenuItem3.Checked = true;
-            toolStripMenuItem2.DropDownItems.Add(toolStripMenuItem3);
-            menuStrip1.Items.Add(toolStripMenuItem2);
+            foreach (Firadio.Response.Menu menu in JsonConfig.Menus)
+            {
+                ToolStripMenuItem menu1 = new ToolStripMenuItem();
+                menu1.Text = menu.Name;
+                foreach (Firadio.Response.MenuItem menuItem in menu.Items)
+                {
+                    menuItem.Title = menu.Name + " (" + menuItem.Name + ")";
+                    menu1.DropDownItems.Add(ToToolStripMenuItem(menuItem));
+                }
+                menuStrip1.Items.Add(menu1);
+            }
         }
+
     }
 }
