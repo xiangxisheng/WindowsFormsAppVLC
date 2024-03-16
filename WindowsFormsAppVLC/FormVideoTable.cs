@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Drawing;
 using System.IO;
+using System.Reflection;
 using System.Threading;
 using System.Windows.Forms;
 
@@ -33,7 +34,11 @@ namespace WindowsFormsAppVLC
             //{
             //    ShowMessageLabel("请在菜单栏选择要查看的视频");
             //}));
-            labelMsgText = "请在菜单栏选择要查看的视频";
+            labelMsgText = "视频控件加载完成";
+            if (JsonConfig != null && JsonConfig.Menus != null && JsonConfig.Menus.Count > 0)
+            {
+                labelMsgText = "视频控件加载完成，请选择要播放的视频";
+            }
         }
 
         public FormVideoTable()
@@ -94,8 +99,7 @@ namespace WindowsFormsAppVLC
             Firadio.Response.MenuItem menuItem = (Firadio.Response.MenuItem)toolStripMenuItem.Tag;
             if (menuItem.Name == "下载配置文件")
             {
-                new FormDownload().ShowDialog();
-                加载配置文件();
+                下载配置文件();
                 return;
             }
             labelMsgText = "";
@@ -117,6 +121,9 @@ namespace WindowsFormsAppVLC
 
 
             ClearVideoControl();
+
+            SetFormText(menuItem.Title);
+
             for (int i = menuItem.Start; i <= menuItem.End; i++)
             {
                 videoControls.Add(new VideoControl(_libVLC, JsonConfig.Channels[i].Liveurl, JsonConfig.Channels[i].Title));
@@ -146,6 +153,7 @@ namespace WindowsFormsAppVLC
                 if (labelMsgText == "")
                 {
                     ControlsInit(tableLayoutPanel1);
+                    timer1.Stop();
                 }
                 else
                 {
@@ -166,6 +174,18 @@ namespace WindowsFormsAppVLC
 
         Firadio.Response JsonConfig;
 
+
+        private void 下载配置文件()
+        {
+            DialogResult dialogResult = new FormDownload().ShowDialog();
+            if (dialogResult == DialogResult.OK)
+            {
+                加载配置文件();
+                return;
+            }
+            labelMsgText = "请先下载配置文件";
+        }
+
         private void 加载配置文件()
         {
             menuStrip1.Items.Clear();
@@ -178,8 +198,9 @@ namespace WindowsFormsAppVLC
             string jsonPath = Application.ExecutablePath + ".json";
             if (!File.Exists(jsonPath))
             {
+                labelMsgText = "请先下载配置文件";
                 // 如果配置文件不存在，自动打开下载框
-                new FormDownload().ShowDialog();
+                下载配置文件();
                 return;
             }
             try
@@ -193,7 +214,11 @@ namespace WindowsFormsAppVLC
                 MessageBox.Show("配置文件JSON解析失败: " + ex.ToString());
                 return;
             }
-
+            SetFormText("");
+            if (JsonConfig.Menus == null)
+            {
+                return;
+            }
             foreach (Firadio.Response.Menu menu in JsonConfig.Menus)
             {
                 ToolStripMenuItem menu1 = new ToolStripMenuItem();
@@ -205,7 +230,23 @@ namespace WindowsFormsAppVLC
                 }
                 menuStrip1.Items.Add(menu1);
             }
+            labelMsgText = "请在菜单栏选择要查看的视频";
+        }
+
+        private void SetFormText(string menuItemTitle)
+        {
+            string version = Assembly.GetEntryAssembly().GetName().Version.ToString();
+            string formTitle = string.IsNullOrWhiteSpace(JsonConfig.Title) ? "IPTV视频监控" : JsonConfig.Title;
+            if (menuItemTitle == "")
+            {
+                Text = string.Format("{0} ({1})", formTitle, version);
+            }
+            else
+            {
+                Text = string.Format("{0} - {1} ({2})", menuItemTitle, JsonConfig.Title, version);
+            }
         }
 
     }
+
 }

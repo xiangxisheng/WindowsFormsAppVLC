@@ -50,7 +50,14 @@ $menus = [
 		'items' => items(6, 6),
 	],
 ];
-echo json_encode([
+if (version_compare($_SERVER['HTTP_VERSION'], '2024.3.16') === -1) {
+	exit(json_encode([
+		'message' => '您当前软件版本过低',
+	], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
+}
+exit(json_encode([
+	'title' => '华电西港IPTV视频监控',
 	'menus' => $menus,
 	'channels' => $channels,
-], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+	'message' => '配置文件下载成功',
+], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));

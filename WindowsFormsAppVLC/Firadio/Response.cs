@@ -49,6 +49,12 @@ namespace Firadio
             public string Liveurl { get; internal set; }
         }
 
+        [DataMember(Name = "title")]
+        public string Title { get; internal set; }
+
+        [DataMember(Name = "message")]
+        public string Message { get; internal set; }
+
         [DataMember(Name = "menus")]
         public List<Menu> Menus { get; internal set; }
 

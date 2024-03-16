@@ -2,6 +2,7 @@
 using System.Drawing;
 using System.IO;
 using System.Net;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
@@ -15,6 +16,7 @@ namespace WindowsFormsAppVLC
             InitializeComponent();
             comboBox1.SelectedIndex = 0;
         }
+        readonly string jsonPath = Application.ExecutablePath + ".json";
 
         class CustomMessageBox : Form
         {
@@ -54,11 +56,17 @@ namespace WindowsFormsAppVLC
             }
         }
 
-        WebClient webClient = new WebClient { Encoding = Encoding.UTF8 };
-
+        readonly WebClient webClient = new WebClient { Encoding = Encoding.UTF8 };
+        private void Header(string key, string val)
+        {
+            webClient.Headers[key] = val;
+        }
         private async Task 下载配置文件()
         {
             toolStripStatusLabel1.Text = "正在下载配置文件...";
+
+            string version = Assembly.GetEntryAssembly().GetName().Version.ToString();
+            Header("version", version);
             string sJson;
             try
             {
@@ -71,9 +79,10 @@ namespace WindowsFormsAppVLC
                 return;
             }
             toolStripStatusLabel1.Text = "配置文件获取成功,正在解析JSON...";
+            Firadio.Response response;
             try
             {
-                Firadio.Response response = Firadio.HttpUtils.JSON.Parse<Firadio.Response>(sJson);
+                response = Firadio.HttpUtils.JSON.Parse<Firadio.Response>(sJson);
                 Console.WriteLine(response);
             }
             catch (Exception ex)
@@ -81,10 +90,9 @@ namespace WindowsFormsAppVLC
                 toolStripStatusLabel1.Text = "JSON解析报错: " + ex.ToString();
                 return;
             }
-            string path = Application.ExecutablePath + ".json";
-            File.WriteAllText(path, sJson);
+            File.WriteAllText(jsonPath, sJson);
             toolStripStatusLabel1.Text = "配置文件下载完成.";
-            new CustomMessageBox("配置文件下载完成.").ShowDialog();
+            new CustomMessageBox(response.Message).ShowDialog();
             Close();
         }
 
@@ -95,6 +103,12 @@ namespace WindowsFormsAppVLC
             button1.Enabled = true;
         }
 
-
+        private void FormDownload_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if (File.Exists(jsonPath))
+            {
+                DialogResult = DialogResult.OK;
+            }
+        }
     }
 }

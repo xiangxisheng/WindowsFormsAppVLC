@@ -99,6 +99,7 @@
             this.Name = "FormDownload";
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "下载配置文件";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.FormDownload_FormClosing);
             this.groupBox1.ResumeLayout(false);
             this.statusStrip1.ResumeLayout(false);
             this.statusStrip1.PerformLayout();
