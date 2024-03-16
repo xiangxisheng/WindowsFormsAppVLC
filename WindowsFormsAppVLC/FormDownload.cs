@@ -61,7 +61,7 @@ namespace WindowsFormsAppVLC
         {
             webClient.Headers[key] = val;
         }
-        private async Task 下载配置文件()
+        private async Task 开始下载配置文件()
         {
             toolStripStatusLabel1.Text = "正在下载配置文件...";
 
@@ -73,9 +73,10 @@ namespace WindowsFormsAppVLC
                 byte[] Result = await webClient.DownloadDataTaskAsync(comboBox1.Text);
                 sJson = Encoding.UTF8.GetString(Result);
             }
-            catch (Exception ex)
+            catch (Exception​ ex)
             {
-                toolStripStatusLabel1.Text = "文件下载失败: " + ex.ToString();
+                toolStripStatusLabel1.Text = "文件下载失败!!!";
+                MessageBox.Show("文件下载失败!!!\r\n" + ex.Message, "文件下载失败");
                 return;
             }
             toolStripStatusLabel1.Text = "配置文件获取成功,正在解析JSON...";
@@ -87,7 +88,8 @@ namespace WindowsFormsAppVLC
             }
             catch (Exception ex)
             {
-                toolStripStatusLabel1.Text = "JSON解析报错: " + ex.ToString();
+                toolStripStatusLabel1.Text = "JSON解析报错!!!";
+                MessageBox.Show("JSON解析报错!!!\r\n" + ex.Message, "JSON解析报错");
                 return;
             }
             File.WriteAllText(jsonPath, sJson);
@@ -96,11 +98,18 @@ namespace WindowsFormsAppVLC
             Close();
         }
 
-        private void button1_Click(object sender, EventArgs e)
+        private async Task 下载配置文件()
         {
             button1.Enabled = false;
-            _ = 下载配置文件();
+            groupBox1.Enabled = false;
+            await 开始下载配置文件();
             button1.Enabled = true;
+            groupBox1.Enabled = true;
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            _ = 下载配置文件();
         }
 
         private void FormDownload_FormClosing(object sender, FormClosingEventArgs e)

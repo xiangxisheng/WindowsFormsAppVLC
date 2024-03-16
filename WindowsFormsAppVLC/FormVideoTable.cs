@@ -178,7 +178,9 @@ namespace WindowsFormsAppVLC
 
         private void 下载配置文件()
         {
-            DialogResult dialogResult = new FormDownload().ShowDialog();
+            FormDownload formDownload = new FormDownload();
+            formDownload.Text = GetFormText("配置文件下载");
+            DialogResult dialogResult = formDownload.ShowDialog();
             if (dialogResult == DialogResult.OK)
             {
                 加载配置文件();
@@ -234,18 +236,23 @@ namespace WindowsFormsAppVLC
             labelMsgText = "请在菜单栏选择要查看的视频";
         }
 
-        private void SetFormText(string menuItemTitle = "")
+        private string GetFormText(string menuItemTitle = "")
         {
+            string formTitle = JsonConfig == null || string.IsNullOrWhiteSpace(JsonConfig.Title) ? "IPTV视频监控" : JsonConfig.Title;
             string version = Assembly.GetEntryAssembly().GetName().Version.ToString();
-            string formTitle = JsonConfig == null || string.IsNullOrWhiteSpace(JsonConfig.Title) ? Text : JsonConfig.Title;
             if (menuItemTitle == "")
             {
-                Text = string.Format("{0} (v{1})", formTitle, version);
+                return string.Format("{0} (v{1})", formTitle, version);
             }
             else
             {
-                Text = string.Format("{0} - {1} (v{2})", menuItemTitle, JsonConfig.Title, version);
+                return string.Format("{0} - {1} (v{2})", menuItemTitle, formTitle, version);
             }
+        }
+
+        private void SetFormText(string menuItemTitle = "")
+        {
+            Text = GetFormText(menuItemTitle);
         }
 
     }
