@@ -97,6 +97,12 @@ namespace WindowsFormsAppVLC
 
         private void ToolStripMenuItem_Click(object sender, EventArgs e)
         {
+            if (_libVLC == null)
+            {
+                MessageBox.Show("视频组件正在初始化，请稍后。");
+                return;
+            }
+
             ToolStripMenuItem toolStripMenuItem = (ToolStripMenuItem)sender;
             Firadio.Response.MenuItem menuItem = (Firadio.Response.MenuItem)toolStripMenuItem.Tag;
             if (menuItem.Name == "下载配置文件")
